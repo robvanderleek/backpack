@@ -1,0 +1,23 @@
+{
+  "name": "backpack",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "bp": "index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robvanderleek/backpack.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/robvanderleek/backpack/issues"
+  },
+  "homepage": "https://github.com/robvanderleek/backpack#readme"
+}
