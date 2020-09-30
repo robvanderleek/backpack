@@ -8,7 +8,9 @@ function usage() {
         'Backpack usage:\n' +
         '  List files in backpack: bp -l\n' +
         '  Put in backpack: bp -i <filename>\n' +
-        '  Get from backpack: bp -e <filename>\n')
+        '  Get from backpack: bp -e <filename>\n' +
+        '  Stream to backpack: bp < some-file.xyz\n' +
+        '  Stream from backpack: bp <index>\n');
 }
 
 function initializeBackpackDir() {
@@ -26,8 +28,18 @@ function importFile(filename, backpackDir) {
     fs.renameSync(filename, path.join(backpackDir, filename));
 }
 
+function importFromStdin(backpackDir) {
+    const filename = `stdin-${new Date().toISOString()}`;
+    const file = path.join(backpackDir, filename);
+    process.stdin.pipe(fs.createWriteStream(file));
+}
+
 function exportFile(filename, backpackDir) {
     fs.renameSync(path.join(backpackDir, filename), filename);
+}
+
+function exportToStdout(filename, backpackDir) {
+    fs.createReadStream(path.join(backpackDir, filename)).pipe(process.stdout);
 }
 
 function getStoredFiles(backpackDir) {
@@ -54,6 +66,13 @@ if (args.length === 2 && args[0] === '-i') {
     exportFile(args[1], backpackDir);
 } else if (args.length === 1 && args[0] === '-l') {
     listFiles(backpackDir);
+} else if (args.length === 1 && !isNaN(args[0])) {
+    const index = parseInt(args[0]);
+    const files = getStoredFiles(backpackDir);
+    const filename = files[files.length - index];
+    exportToStdout(filename, backpackDir);
+} else if (!process.stdin.isTTY) {
+    importFromStdin(backpackDir);
 } else {
     usage();
 }
