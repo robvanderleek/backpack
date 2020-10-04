@@ -1,6 +1,8 @@
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
+import Table from "tty-table";
+import {timeSince} from "./utils.js";
 
 export function initializeBackpackDir() {
     const homeDir = os.homedir();
@@ -31,20 +33,51 @@ export function exportToStdout(filename, backpackDir) {
     fs.createReadStream(path.join(backpackDir, filename)).pipe(process.stdout);
 }
 
-export function getStoredFiles(backpackDir) {
+export function getStoredFilesWithTimestamp(backpackDir) {
     const files = fs.readdirSync(backpackDir);
-    files.sort((a, b) => fs.statSync(path.join(backpackDir, b)).ctime.getTime() -
-        fs.statSync(path.join(backpackDir, a)).ctime.getTime()
-    );
-    return files;
+    const filesWithTimestamp = files.map(f => [f, fs.statSync(path.join(backpackDir, f)).ctime.getTime()]);
+    filesWithTimestamp.sort((a, b) => b[1] - a[1]);
+    return filesWithTimestamp;
 }
 
 export function listFiles(backpackDir) {
-    const files = getStoredFiles(backpackDir);
+    const rows = [];
+    const files = getStoredFilesWithTimestamp(backpackDir);
     files.forEach((f, i) => {
         const index = files.length - i;
-        console.log(`${index}: ${f}`);
+        rows.push([index, timeSince(f[1]), f[0]]);
     });
+    const header = [{
+        value: '#',
+        align: 'right',
+        headerAlign: 'right',
+        headerColor: 'bold'
+    }, {
+        value: 'Age',
+        align: 'left',
+        headerAlign: 'left',
+        headerColor: 'bold',
+    }, {
+        value: 'Content',
+        align: 'left',
+        headerAlign: 'left',
+        headerColor: 'bold',
+    }];
+    const table = Table(header, rows, {
+        borderStyle: 'none',
+        compact: true,
+        align: 'left',
+        paddingTop: 0,
+        // paddingLeft: 0,
+        paddingBottom: 0,
+        paddingRight: 0,
+        marginTop: 0,
+        marginLeft: 0,
+        marginBottom: 0,
+        marginRight: 0
+    });
+    const output = table.render().substring(1);
+    process.stdout.write(output);
 }
 
 export function deleteFile(filename, backpackDir) {

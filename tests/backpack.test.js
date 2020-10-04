@@ -1,4 +1,4 @@
-import {deleteFile, getStoredFiles} from "../src/backpack";
+import {deleteFile, getStoredFilesWithTimestamp} from "../src/backpack";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -22,7 +22,7 @@ function createFile(filename) {
 }
 
 test('get stored files, empty backpack', () => {
-    const result = getStoredFiles(backpackFolder);
+    const result = getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
@@ -30,7 +30,7 @@ test('get stored files, empty backpack', () => {
 test('get stored files, single file in backpack', () => {
     createFile('noot.txt');
 
-    const result = getStoredFiles(backpackFolder);
+    const result = getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(1);
 });
@@ -38,13 +38,13 @@ test('get stored files, single file in backpack', () => {
 test('delete file', () => {
     createFile('noot.txt');
 
-    let result = getStoredFiles(backpackFolder);
+    let result = getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(1);
 
     deleteFile('noot.txt', backpackFolder);
 
-    result = getStoredFiles(backpackFolder);
+    result = getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
