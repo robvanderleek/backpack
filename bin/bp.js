@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 import {
-    deleteFile,
+    deleteIndex,
     exportFile,
     exportToStdout,
     getStoredFilesWithTimestamp,
@@ -33,9 +33,7 @@ if (args.length === 2 && args[0] === '-i') {
     listFiles(backpackDir);
 } else if (args.length === 2 && args[0] === '-d' && !isNaN(args[1])) {
     const index = parseInt(args[1]);
-    const files = getStoredFiles(backpackDir);
-    const filename = files[files.length - index];
-    deleteFile(filename, backpackDir);
+    deleteIndex(index, backpackDir);
 } else if (args.length === 1 && !isNaN(args[0])) {
     const index = parseInt(args[0]);
     const files = getStoredFilesWithTimestamp(backpackDir);

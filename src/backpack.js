@@ -1,8 +1,7 @@
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import Table from "tty-table";
-import {timeSince} from "./utils.js";
+import BackpackTable from "./BackpackTable.js";
 
 export function initializeBackpackDir() {
     const homeDir = os.homedir();
@@ -33,53 +32,42 @@ export function exportToStdout(filename, backpackDir) {
     fs.createReadStream(path.join(backpackDir, filename)).pipe(process.stdout);
 }
 
+function readContentForStdinFiles(files, backpackDir) {
+    return files.map(f => {
+       if (f[0].startsWith('stdin-')) {
+           let content = fs.readFileSync(path.join(backpackDir, f[0]), 'utf-8');
+           content = content.replace(/(?:\r\n|\r|\n)/g, ' ');
+           content = content.substring(0, 60);
+           if (content.length === 0) {
+               content = '<empty>';
+           } else {
+               content = '"' + content + '"';
+           }
+           return [...f, content];
+       } else {
+           return [...f, f[0]];
+       }
+    });
+}
+
 export function getStoredFilesWithTimestamp(backpackDir) {
     const files = fs.readdirSync(backpackDir);
     const filesWithTimestamp = files.map(f => [f, fs.statSync(path.join(backpackDir, f)).ctime.getTime()]);
     filesWithTimestamp.sort((a, b) => b[1] - a[1]);
-    return filesWithTimestamp;
+    return readContentForStdinFiles(filesWithTimestamp, backpackDir);
 }
 
 export function listFiles(backpackDir) {
-    const rows = [];
     const files = getStoredFilesWithTimestamp(backpackDir);
-    files.forEach((f, i) => {
-        const index = files.length - i;
-        rows.push([index, timeSince(f[1]), f[0]]);
-    });
-    const header = [{
-        value: '#',
-        align: 'right',
-        headerAlign: 'right',
-        headerColor: 'bold'
-    }, {
-        value: 'Age',
-        align: 'left',
-        headerAlign: 'left',
-        headerColor: 'bold',
-    }, {
-        value: 'Content',
-        align: 'left',
-        headerAlign: 'left',
-        headerColor: 'bold',
-    }];
-    const table = Table(header, rows, {
-        borderStyle: 'none',
-        compact: true,
-        align: 'left',
-        paddingTop: 0,
-        // paddingLeft: 0,
-        paddingBottom: 0,
-        paddingRight: 0,
-        marginTop: 0,
-        marginLeft: 0,
-        marginBottom: 0,
-        marginRight: 0
-    });
-    const output = table.render().substring(1);
-    process.stdout.write(output);
+    new BackpackTable(files).render();
 }
 
 export function deleteFile(filename, backpackDir) {
     fs.unlinkSync(path.join(backpackDir, filename));
+}
+
+export function deleteIndex(index, backpackDir) {
+    const files = getStoredFilesWithTimestamp(backpackDir);
+    const filename = files[files.length - index][0];
+    deleteFile(filename, backpackDir);
 }
