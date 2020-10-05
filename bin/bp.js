@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 import {
-    deleteFile,
+    deleteIndex,
     exportFile,
     exportToStdout,
-    getStoredFiles,
+    getStoredFilesWithTimestamp,
     importFile,
     importFromStdin,
     initializeBackpackDir,
@@ -14,12 +14,13 @@ import {
 function usage() {
     console.log(
         'Backpack usage:\n' +
-        '  List files in backpack: bp -l\n' +
+        '  List files in backpack: bp or bp -l\n' +
         '  Put in backpack: bp -i <filename>\n' +
         '  Get from backpack: bp -e <filename>\n' +
         '  Stream to backpack: bp < some-file.xyz\n' +
         '  Stream from backpack: bp <index>\n' +
-        '  Delete from backpack: bp -d <index>\n');
+        '  Delete from backpack: bp -d <index>\n' +
+        '  Show this help: bp -h');
 }
 
 const backpackDir = initializeBackpackDir();
@@ -32,16 +33,16 @@ if (args.length === 2 && args[0] === '-i') {
     listFiles(backpackDir);
 } else if (args.length === 2 && args[0] === '-d' && !isNaN(args[1])) {
     const index = parseInt(args[1]);
-    const files = getStoredFiles(backpackDir);
-    const filename = files[files.length - index];
-    deleteFile(filename, backpackDir);
+    deleteIndex(index, backpackDir);
 } else if (args.length === 1 && !isNaN(args[0])) {
     const index = parseInt(args[0]);
-    const files = getStoredFiles(backpackDir);
-    const filename = files[files.length - index];
+    const files = getStoredFilesWithTimestamp(backpackDir);
+    const filename = files[files.length - index][0];
     exportToStdout(filename, backpackDir);
+} else if (args.length === 1 && args[0] === '-h') {
+    usage();
 } else if (!process.stdin.isTTY) {
     importFromStdin(backpackDir);
 } else {
-    usage();
+    listFiles(backpackDir);
 }

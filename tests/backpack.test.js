@@ -1,4 +1,4 @@
-import {deleteFile, getStoredFiles} from "../src/backpack";
+import {deleteFile, deleteIndex, getStoredFilesWithTimestamp} from "../src/backpack";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -17,12 +17,17 @@ afterEach(() => {
     }
 })
 
-function createFile(filename) {
-    fs.writeFileSync(path.join(backpackFolder, filename), '');
+function createFile(filename, content = '') {
+    fs.writeFileSync(path.join(backpackFolder, filename), content);
+}
+
+function createStdinFile(content) {
+    const filename = `stdin-${new Date().toISOString()}`;
+    createFile(filename, content);
 }
 
 test('get stored files, empty backpack', () => {
-    const result = getStoredFiles(backpackFolder);
+    const result = getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
@@ -30,24 +35,45 @@ test('get stored files, empty backpack', () => {
 test('get stored files, single file in backpack', () => {
     createFile('noot.txt');
 
-    const result = getStoredFiles(backpackFolder);
+    const result = getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(1);
 });
 
-test('delete file', () => {
+test('delete file by name', () => {
     createFile('noot.txt');
 
-    let result = getStoredFiles(backpackFolder);
+    let result = getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(1);
 
     deleteFile('noot.txt', backpackFolder);
 
-    result = getStoredFiles(backpackFolder);
+    result = getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
+
+test('delete file by index', () => {
+    createFile('noot.txt');
+
+    deleteIndex(1, backpackFolder);
+
+    const result = getStoredFilesWithTimestamp(backpackFolder);
+
+    expect(result).toHaveLength(0);
+});
+
+test('delete stdin file by index', () => {
+    createStdinFile('Hello world');
+
+    deleteIndex(1, backpackFolder);
+
+    const result = getStoredFilesWithTimestamp(backpackFolder);
+
+    expect(result).toHaveLength(0);
+});
+
 
 
 
