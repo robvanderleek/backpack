@@ -12,6 +12,8 @@
     "bp": "bin/bp.js"
   },
   "dependencies": {
+    "file-type": "^15.0.1",
+    "read-chunk": "^3.2.0",
     "tty-table": "^4.1.3"
   },
   "devDependencies": {

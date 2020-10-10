@@ -26,54 +26,50 @@ function createStdinFile(content) {
     createFile(filename, content);
 }
 
-test('get stored files, empty backpack', () => {
-    const result = getStoredFilesWithTimestamp(backpackFolder);
+test('get stored files, empty backpack', async () => {
+    const result = await getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
 
-test('get stored files, single file in backpack', () => {
+test('get stored files, single file in backpack', async () => {
     createFile('noot.txt');
 
-    const result = getStoredFilesWithTimestamp(backpackFolder);
+    const result = await getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(1);
 });
 
-test('delete file by name', () => {
+test('delete file by name', async () => {
     createFile('noot.txt');
 
-    let result = getStoredFilesWithTimestamp(backpackFolder);
+    let result = await getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(1);
 
     deleteFile('noot.txt', backpackFolder);
 
-    result = getStoredFilesWithTimestamp(backpackFolder);
+    result = await getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
 
-test('delete file by index', () => {
+test('delete file by index', async () => {
     createFile('noot.txt');
 
-    deleteIndex(1, backpackFolder);
+    await deleteIndex(1, backpackFolder);
 
-    const result = getStoredFilesWithTimestamp(backpackFolder);
+    const result = await getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
 
-test('delete stdin file by index', () => {
+test('delete stdin file by index', async () => {
     createStdinFile('Hello world');
 
-    deleteIndex(1, backpackFolder);
+    await deleteIndex(1, backpackFolder);
 
-    const result = getStoredFilesWithTimestamp(backpackFolder);
+    const result = await getStoredFilesWithTimestamp(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
-
-
-
-

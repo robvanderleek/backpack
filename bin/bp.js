@@ -35,10 +35,12 @@ if (args.length === 2 && args[0] === '-i') {
     const index = parseInt(args[1]);
     deleteIndex(index, backpackDir);
 } else if (args.length === 1 && !isNaN(args[0])) {
-    const index = parseInt(args[0]);
-    const files = getStoredFilesWithTimestamp(backpackDir);
-    const filename = files[files.length - index][0];
-    exportToStdout(filename, backpackDir);
+    (async () => {
+        const index = parseInt(args[0]);
+        const files = await getStoredFilesWithTimestamp(backpackDir);
+        const filename = files[files.length - index][0];
+        exportToStdout(filename, backpackDir);
+    })();
 } else if (args.length === 1 && args[0] === '-h') {
     usage();
 } else if (!process.stdin.isTTY) {
