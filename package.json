@@ -4,6 +4,9 @@
   "description": "",
   "type": "module",
   "main": "src/backpack.js",
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "test": "jest",
     "semantic-release": "semantic-release"
