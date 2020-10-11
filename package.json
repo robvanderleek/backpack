@@ -1,6 +1,6 @@
 {
   "name": "@robvanderleek/backpack",
-  "version": "0.0.0-development",
+  "version": "0.0.1-development",
   "description": "",
   "type": "module",
   "main": "src/backpack.js",
