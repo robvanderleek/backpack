@@ -1,16 +1,19 @@
-import {timeSince} from "./utils.js";
+import {timeSince} from "./utils";
 import Table from "tty-table";
+import {Item} from "./entities/Item";
 
 export default class BackpackTable {
-    constructor(files) {
+    private files: Array<Item>;
+
+    constructor(files: Array<Item>) {
         this.files = files;
     }
 
     render() {
-        const rows = [];
+        const rows: Array<Array<any>> = [];
         this.files.forEach((f, i) => {
             const index = this.files.length - i;
-            rows.push([index, timeSince(f[1]), f[2]]);
+            rows.push([index, timeSince(f.ctime), f.ctime]);
         });
         const header = [{
             value: '#',
@@ -28,6 +31,7 @@ export default class BackpackTable {
             headerAlign: 'left',
             headerColor: 'bold',
         }];
+        // @ts-ignore
         const table = Table(header, rows, {
             borderStyle: 'none',
             compact: true,

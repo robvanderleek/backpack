@@ -1,11 +1,11 @@
-import {deleteFile, deleteIndex, getStoredFilesWithTimestamp} from "../src/backpack";
+import {deleteFile, deleteIndex, getStoredFilesWithTimestamp} from "./backpack";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import {afterEach, beforeEach, test} from "@jest/globals";
 import {removeFolder} from "./test-utils";
 
-let backpackFolder;
+let backpackFolder: string;
 
 beforeEach(() => {
     backpackFolder = fs.mkdtempSync(path.join(os.tmpdir(), 'backpack-'));
@@ -17,11 +17,11 @@ afterEach(() => {
     }
 })
 
-function createFile(filename, content = '') {
+function createFile(filename: string, content = '') {
     fs.writeFileSync(path.join(backpackFolder, filename), content);
 }
 
-function createStdinFile(content) {
+function createStdinFile(content: string) {
     const filename = `stdin-${new Date().toISOString()}`;
     createFile(filename, content);
 }

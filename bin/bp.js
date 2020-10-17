@@ -9,7 +9,7 @@ import {
     importFromStdin,
     initializeBackpackDir,
     listFiles
-} from "../src/backpack.js";
+} from "../src/backpack.ts";
 
 function usage() {
     console.log(

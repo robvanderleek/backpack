@@ -1,9 +1,10 @@
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
-import BackpackTable from "./BackpackTable.js";
+import BackpackTable from "./BackpackTable";
 import FileType from "file-type";
 import readChunk from "read-chunk";
+import {Item} from "./entities/Item";
 
 export function initializeBackpackDir() {
     const homeDir = os.homedir();
@@ -16,39 +17,39 @@ export function initializeBackpackDir() {
     return backpackDir;
 }
 
-export function importFile(filename, backpackDir) {
+export function importFile(filename: string, backpackDir: string) {
     fs.renameSync(filename, path.join(backpackDir, filename));
 }
 
-export function importFromStdin(backpackDir) {
+export function importFromStdin(backpackDir: string) {
     const filename = `stdin-${new Date().toISOString()}`;
     const file = path.join(backpackDir, filename);
     process.stdin.pipe(fs.createWriteStream(file));
 }
 
-export function exportFile(filename, backpackDir) {
+export function exportFile(filename: string, backpackDir: string) {
     fs.renameSync(path.join(backpackDir, filename), filename);
 }
 
-export function exportToStdout(filename, backpackDir) {
+export function exportToStdout(filename: string, backpackDir: string) {
     fs.createReadStream(path.join(backpackDir, filename)).pipe(process.stdout);
 }
 
-
-async function getContent(fullPath) {
+async function getContent(fullPath: string) {
     const chunk = readChunk.sync(fullPath, 0, 60);
     const type = await FileType.fromBuffer(chunk);
     if (type) {
         return type.mime;
     } else {
+        // @ts-ignore
         return new Buffer.from(chunk).toString('utf-8');
     }
 }
 
-async function readContentForStdinFiles(files, backpackDir) {
-    const result = await Promise.all(files.map(async f => {
-        if (f[0].startsWith('stdin-')) {
-            const fullPath = path.join(backpackDir, f[0]);
+async function readContentForStdinFiles(items: Array<Item>, backpackDir: string) {
+    const result = await Promise.all(items.map(async i => {
+        if (i.name.startsWith('stdin-')) {
+            const fullPath = path.join(backpackDir, i.name);
             let content = await getContent(fullPath);
             content = content.replace(/(?:\r\n|\r|\n)/g, ' ');
             content = content.substring(0, 60);
@@ -57,32 +58,36 @@ async function readContentForStdinFiles(files, backpackDir) {
             } else {
                 content = '"' + content + '"';
             }
-            return [...f, content];
+            i.content = content;
         } else {
-            return [...f, f[0]];
+            i.content = i.name;
         }
+        return i;
     }));
     return result;
 }
 
-export async function getStoredFilesWithTimestamp(backpackDir) {
+export async function getStoredFilesWithTimestamp(backpackDir: string): Promise<Array<Item>> {
     const files = fs.readdirSync(backpackDir);
-    const filesWithTimestamp = files.map(f => [f, fs.statSync(path.join(backpackDir, f)).ctime.getTime()]);
-    filesWithTimestamp.sort((a, b) => b[1] - a[1]);
+    const filesWithTimestamp: Array<Item> = files.map(f => ({
+        name: f,
+        ctime: fs.statSync(path.join(backpackDir, f)).ctime.getTime()
+    }));
+    filesWithTimestamp.sort((a, b) => b.ctime - a.ctime);
     return await readContentForStdinFiles(filesWithTimestamp, backpackDir);
 }
 
-export async function listFiles(backpackDir) {
+export async function listFiles(backpackDir: string) {
     const files = await getStoredFilesWithTimestamp(backpackDir);
     new BackpackTable(files).render();
 }
 
-export function deleteFile(filename, backpackDir) {
+export function deleteFile(filename: string, backpackDir: string) {
     fs.unlinkSync(path.join(backpackDir, filename));
 }
 
-export async function deleteIndex(index, backpackDir) {
+export async function deleteIndex(index: number, backpackDir: string) {
     const files = await getStoredFilesWithTimestamp(backpackDir);
-    const filename = files[files.length - index][0];
+    const filename = files[files.length - index].name;
     deleteFile(filename, backpackDir);
 }

@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as path from "path";
 
-export function removeFolder(folder) {
+export function removeFolder(folder: string) {
     if (fs.existsSync(folder)) {
         fs.readdirSync(folder).forEach(file => {
             const curPath = path.join(folder, file);

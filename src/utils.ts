@@ -1,10 +1,10 @@
-export function timeSince (timestamp, timestampSince) {
+export function timeSince(timestamp: number, timestampSince?: number) {
     const now = timestampSince ? timestampSince : new Date().getTime();
     const seconds = Math.floor((now - timestamp) / 1000);
     return getInterval(seconds);
 }
 
-function getInterval(seconds) {
+function getInterval(seconds: number) {
     let interval = Math.floor(seconds / 31536000);
     if (interval >= 1) {
         return `${interval}y`;
