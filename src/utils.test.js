@@ -1,5 +1,5 @@
 import {test} from "@jest/globals";
-import {timeSince} from "../src/utils";
+import {timeSince} from "./utils";
 
 test('time since 1 hour ago', () => {
     const timestamp = 1601841600 * 1000; // 2020-10-04 20:00

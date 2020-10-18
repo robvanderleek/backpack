@@ -1,6 +1,6 @@
 # backpack
 
-![Logo](docs/logo.png)
+![Visualx1](docs/visual.jpg)
 
 [![BCH compliance](https://bettercodehub.com/edge/badge/robvanderleek/backpack?branch=master)](https://bettercodehub.com/)
 [![Build Status](https://github.com/robvanderleek/backpack/workflows/CICD/badge.svg)](https://github.com/robvanderleek/backpack/actions)

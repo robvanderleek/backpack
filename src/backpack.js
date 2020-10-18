@@ -47,8 +47,8 @@ async function getContent(fullPath) {
 
 async function readContentForStdinFiles(files, backpackDir) {
     const result = await Promise.all(files.map(async f => {
-        if (f[0].startsWith('stdin-')) {
-            const fullPath = path.join(backpackDir, f[0]);
+        if (f.name.startsWith('stdin-')) {
+            const fullPath = path.join(backpackDir, f.name);
             let content = await getContent(fullPath);
             content = content.replace(/(?:\r\n|\r|\n)/g, ' ');
             content = content.substring(0, 60);
@@ -57,24 +57,28 @@ async function readContentForStdinFiles(files, backpackDir) {
             } else {
                 content = '"' + content + '"';
             }
-            return [...f, content];
+            return {...f, content: content};
         } else {
-            return [...f, f[0]];
+            return {...f, content: f.name};
         }
     }));
     return result;
 }
 
-export async function getStoredFilesWithTimestamp(backpackDir) {
+export async function getStoredFiles(backpackDir) {
     const files = fs.readdirSync(backpackDir);
-    const filesWithTimestamp = files.map(f => [f, fs.statSync(path.join(backpackDir, f)).ctime.getTime()]);
-    filesWithTimestamp.sort((a, b) => b[1] - a[1]);
-    return await readContentForStdinFiles(filesWithTimestamp, backpackDir);
+    const filesWithTimestamp = files.map(f => ({
+        name: f,
+        ctime: fs.statSync(path.join(backpackDir, f)).ctime.getTime()
+    }));
+    filesWithTimestamp.sort((a, b) => b.ctime - a.ctime);
+    return filesWithTimestamp;
 }
 
 export async function listFiles(backpackDir) {
-    const files = await getStoredFilesWithTimestamp(backpackDir);
-    new BackpackTable(files).render();
+    const files = await getStoredFiles(backpackDir);
+    const filesWithContent = await readContentForStdinFiles(files, backpackDir)
+    new BackpackTable(filesWithContent).render();
 }
 
 export function deleteFile(filename, backpackDir) {
@@ -82,7 +86,7 @@ export function deleteFile(filename, backpackDir) {
 }
 
 export async function deleteIndex(index, backpackDir) {
-    const files = await getStoredFilesWithTimestamp(backpackDir);
-    const filename = files[files.length - index][0];
+    const files = await getStoredFiles(backpackDir);
+    const filename = files[files.length - index].name;
     deleteFile(filename, backpackDir);
 }

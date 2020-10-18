@@ -4,7 +4,7 @@ import {
     deleteIndex,
     exportFile,
     exportToStdout,
-    getStoredFilesWithTimestamp,
+    getStoredFiles,
     importFile,
     importFromStdin,
     initializeBackpackDir,
@@ -37,7 +37,7 @@ if (args.length === 2 && args[0] === '-i') {
 } else if (args.length === 1 && !isNaN(args[0])) {
     (async () => {
         const index = parseInt(args[0]);
-        const files = await getStoredFilesWithTimestamp(backpackDir);
+        const files = await getStoredFiles(backpackDir);
         const filename = files[files.length - index][0];
         exportToStdout(filename, backpackDir);
     })();

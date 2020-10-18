@@ -1,4 +1,4 @@
-import {deleteFile, deleteIndex, getStoredFilesWithTimestamp} from "../src/backpack";
+import {deleteFile, deleteIndex, getStoredFiles} from "./backpack";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -27,7 +27,7 @@ function createStdinFile(content) {
 }
 
 test('get stored files, empty backpack', async () => {
-    const result = await getStoredFilesWithTimestamp(backpackFolder);
+    const result = await getStoredFiles(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
@@ -35,21 +35,22 @@ test('get stored files, empty backpack', async () => {
 test('get stored files, single file in backpack', async () => {
     createFile('noot.txt');
 
-    const result = await getStoredFilesWithTimestamp(backpackFolder);
+    const result = await getStoredFiles(backpackFolder);
 
     expect(result).toHaveLength(1);
+    expect(result[0].name).toBe('noot.txt');
 });
 
 test('delete file by name', async () => {
     createFile('noot.txt');
 
-    let result = await getStoredFilesWithTimestamp(backpackFolder);
+    let result = await getStoredFiles(backpackFolder);
 
     expect(result).toHaveLength(1);
 
     deleteFile('noot.txt', backpackFolder);
 
-    result = await getStoredFilesWithTimestamp(backpackFolder);
+    result = await getStoredFiles(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
@@ -59,7 +60,7 @@ test('delete file by index', async () => {
 
     await deleteIndex(1, backpackFolder);
 
-    const result = await getStoredFilesWithTimestamp(backpackFolder);
+    const result = await getStoredFiles(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
@@ -69,7 +70,7 @@ test('delete stdin file by index', async () => {
 
     await deleteIndex(1, backpackFolder);
 
-    const result = await getStoredFilesWithTimestamp(backpackFolder);
+    const result = await getStoredFiles(backpackFolder);
 
     expect(result).toHaveLength(0);
 });
