@@ -9,7 +9,7 @@ import {
     importFromStdin,
     initializeBackpackDir,
     listFiles
-} from "../src/backpack.ts";
+} from "../src/backpack";
 
 function usage() {
     console.log(
@@ -31,14 +31,14 @@ if (args.length === 2 && args[0] === '-i') {
     exportFile(args[1], backpackDir);
 } else if (args.length === 1 && args[0] === '-l') {
     listFiles(backpackDir);
-} else if (args.length === 2 && args[0] === '-d' && !isNaN(args[1])) {
+} else if (args.length === 2 && args[0] === '-d' && !isNaN(Number(args[1]))) {
     const index = parseInt(args[1]);
     deleteIndex(index, backpackDir);
-} else if (args.length === 1 && !isNaN(args[0])) {
+} else if (args.length === 1 && !isNaN(Number(args[0]))) {
     (async () => {
         const index = parseInt(args[0]);
         const files = await getStoredFilesWithTimestamp(backpackDir);
-        const filename = files[files.length - index][0];
+        const filename = files[files.length - index].name;
         exportToStdout(filename, backpackDir);
     })();
 } else if (args.length === 1 && args[0] === '-h') {

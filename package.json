@@ -12,7 +12,7 @@
     "semantic-release": "semantic-release"
   },
   "bin": {
-    "bp": "bin/bp.js"
+    "bp": "bin/bp.ts"
   },
   "dependencies": {
     "file-type": "^15.0.1",
