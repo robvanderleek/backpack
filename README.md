@@ -1,6 +1,6 @@
 # backpack
 
-![Visualx1](docs/visual.jpg)
+![https://www.pikist.com/free-photo-sipfp](docs/visual.jpg)
 
 [![BCH compliance](https://bettercodehub.com/edge/badge/robvanderleek/backpack?branch=master)](https://bettercodehub.com/)
 [![Build Status](https://github.com/robvanderleek/backpack/workflows/CICD/badge.svg)](https://github.com/robvanderleek/backpack/actions)
@@ -9,6 +9,24 @@
 [![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 Organize the files you typically have laying around on your computer
+
+# TLDR; Show me now
+
+## Basic usage
+
+Add a file to your backpack:
+
+	$ bp -i some-file.xyz
+
+List files in your backpack:
+
+	$ bp
+	
+Get a file from your backpack:
+
+	$ bp -e some-file.xyx
+	
+## 
 
 # Installation
 
