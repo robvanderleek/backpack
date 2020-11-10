@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-
+import {program} from "commander";
 import {
     deleteIndex,
     exportFile,
@@ -11,38 +11,44 @@ import {
     listFiles
 } from "../src/backpack.js";
 
-function usage() {
-    console.log(
-        'Backpack usage:\n' +
-        '  List files in backpack: bp or bp -l\n' +
-        '  Put in backpack: bp -i <filename>\n' +
-        '  Get from backpack: bp -e <filename>\n' +
-        '  Stream to backpack: bp < some-file.xyz\n' +
-        '  Stream from backpack: bp <index>\n' +
-        '  Delete from backpack: bp -d <index>\n' +
-        '  Show this help: bp -h');
-}
+program.version('0.0.1');
+program.option('-l, --list', 'list items in backpack');
+program.option('-i, --import <filename>', 'put in backpack');
+program.option('-e, --export <filename>', 'get from backpack');
+program.option('-d, --delete <index>', 'delete from backpack');
+program.arguments('[index]');
+program.on('--help', () => {
+    console.log('');
+    console.log('Without arguments all files in your backpack will be listed:');
+    console.log('  $ bp');
+    console.log('');
+    console.log('Select items from your backpack by index:');
+    console.log('  $ bp 10');
+    console.log('');
+    console.log('You can also stream data to your backpack:');
+    console.log('  $ bp < some-file.xyz');
+});
+
+program.parse();
 
 const backpackDir = initializeBackpackDir();
 const args = process.argv.slice(2);
-if (args.length === 2 && args[0] === '-i') {
-    importFile(args[1], backpackDir);
-} else if (args.length === 2 && args[0] === '-e') {
-    exportFile(args[1], backpackDir);
-} else if (args.length === 1 && args[0] === '-l') {
+if (program.import && args.length === 2) {
+    importFile(program.import, backpackDir);
+} else if (program.export && args.length === 2) {
+    exportFile(program.export, backpackDir);
+} else if (program.list && args.length === 1) {
     listFiles(backpackDir);
-} else if (args.length === 2 && args[0] === '-d' && !isNaN(args[1])) {
-    const index = parseInt(args[1]);
+} else if (program.delete && args.length === 2 && !isNaN(program.delete)) {
+    const index = parseInt(program.delete);
     deleteIndex(index, backpackDir);
 } else if (args.length === 1 && !isNaN(args[0])) {
     (async () => {
         const index = parseInt(args[0]);
         const files = await getStoredFiles(backpackDir);
-        const filename = files[files.length - index][0];
+        const filename = files[files.length - index].name;
         exportToStdout(filename, backpackDir);
     })();
-} else if (args.length === 1 && args[0] === '-h') {
-    usage();
 } else if (!process.stdin.isTTY) {
     importFromStdin(backpackDir);
 } else {
