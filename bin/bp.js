@@ -4,17 +4,21 @@ import {
     deleteIndex,
     exportFile,
     exportToStdout,
+    getBackpackFolder,
+    getFilename,
     getStoredFiles,
     importFile,
     importFromStdin,
-    initializeBackpackDir,
     listFiles
 } from "../src/backpack.js";
+import {isNumber} from "../src/utils.js";
+
+const backpackFolder = getBackpackFolder();
 
 program.version('0.0.1');
 program.option('-l, --list', 'list items in backpack');
 program.option('-i, --import <filename>', 'put in backpack');
-program.option('-e, --export <filename>', 'get from backpack');
+program.option('-e, --export <index>', 'get from backpack');
 program.option('-d, --delete <index>', 'delete from backpack');
 program.arguments('[index]');
 program.on('--help', () => {
@@ -27,30 +31,31 @@ program.on('--help', () => {
     console.log('');
     console.log('You can also stream data to your backpack:');
     console.log('  $ bp < some-file.xyz');
+    console.log('');
+    console.log(`Your backpack folder is: ${backpackFolder}`);
 });
 
 program.parse();
-
-const backpackDir = initializeBackpackDir();
 const args = process.argv.slice(2);
 if (program.import && args.length === 2) {
-    importFile(program.import, backpackDir);
-} else if (program.export && args.length === 2) {
-    exportFile(program.export, backpackDir);
+    importFile(program.import, backpackFolder);
+} else if (isNumber(program.export) && args.length === 2) {
+    const filename = await getFilename(program.export, backpackFolder);
+    exportFile(filename, backpackFolder);
 } else if (program.list && args.length === 1) {
-    listFiles(backpackDir);
-} else if (program.delete && args.length === 2 && !isNaN(program.delete)) {
+    listFiles(backpackFolder);
+} else if (isNumber(program.delete) && args.length === 2) {
     const index = parseInt(program.delete);
-    deleteIndex(index, backpackDir);
+    deleteIndex(index, backpackFolder);
 } else if (args.length === 1 && !isNaN(args[0])) {
     (async () => {
         const index = parseInt(args[0]);
-        const files = await getStoredFiles(backpackDir);
+        const files = await getStoredFiles(backpackFolder);
         const filename = files[files.length - index].name;
-        exportToStdout(filename, backpackDir);
+        exportToStdout(filename, backpackFolder);
     })();
 } else if (!process.stdin.isTTY) {
-    importFromStdin(backpackDir);
+    importFromStdin(backpackFolder);
 } else {
-    listFiles(backpackDir);
+    listFiles(backpackFolder);
 }

@@ -1,3 +1,5 @@
+import {program} from "commander";
+
 export function timeSince (timestamp, timestampSince) {
     const now = timestampSince ? timestampSince : new Date().getTime();
     const seconds = Math.floor((now - timestamp) / 1000);
@@ -26,4 +28,8 @@ function getInterval(seconds) {
         return `${interval}m`;
     }
     return `${seconds}s`;
+}
+
+export function isNumber(s) {
+    return !isNaN(s);
 }

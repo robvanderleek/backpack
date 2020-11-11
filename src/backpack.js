@@ -5,15 +5,22 @@ import BackpackTable from "./BackpackTable.js";
 import FileType from "file-type";
 import readChunk from "read-chunk";
 
-export function initializeBackpackDir() {
+export function getBackpackFolder() {
     const homeDir = os.homedir();
     if (!homeDir) {
-        console.log('Could not resolve home directory');
+        console.error('Could not resolve home directory!');
         process.exit(1);
     }
-    const backpackDir = path.join(homeDir, '.local', 'share', 'backpack');
-    fs.mkdirSync(backpackDir, {recursive: true});
-    return backpackDir;
+    const result = path.join(homeDir, '.local', 'share', 'backpack');
+    initializeBackpackFolder(result);
+    return result;
+}
+
+function initializeBackpackFolder(backpackFolder) {
+    if (!fs.existsSync(backpackFolder)) {
+        fs.mkdirSync(backpackFolder, {recursive: true});
+        console.log(`Created backpack folder: ${backpackFolder}`);
+    }
 }
 
 export function importFile(filename, backpackDir) {
@@ -63,6 +70,12 @@ async function readContentForStdinFiles(files, backpackDir) {
         }
     }));
     return result;
+}
+
+export async function getFilename(i, backpackFolder) {
+    const index = parseInt(i);
+    const files = await getStoredFiles(backpackFolder);
+    return files[files.length - index].name;
 }
 
 export async function getStoredFiles(backpackDir) {
