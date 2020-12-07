@@ -10,7 +10,7 @@ export default class BackpackTable {
         const rows = [];
         this.files.forEach((f, i) => {
             const index = this.files.length - i;
-            rows.push([index, timeSince(f.ctime), f.content]);
+            rows.push([index, timeSince(f.birthTime), f.content]);
         });
         const header = [{
             value: '#',

@@ -4,6 +4,10 @@ import * as path from "path";
 import BackpackTable from "./BackpackTable.js";
 import FileType from "file-type";
 import readChunk from "read-chunk";
+import emoji from "node-emoji";
+
+export const FILE_TYPE_TEXT_PLAIN = 'text/plain';
+export const FILE_TYPE_DIRECTORY = 'inode/directory';
 
 export function getBackpackFolder() {
     const homeDir = os.homedir();
@@ -24,7 +28,11 @@ function initializeBackpackFolder(backpackFolder) {
 }
 
 export function importFile(filename, backpackDir) {
-    fs.renameSync(filename, path.join(backpackDir, filename));
+    if (fs.existsSync(filename)) {
+        fs.renameSync(filename, path.join(backpackDir, path.basename(filename)));
+    } else {
+        console.error('Could not open file: ' + filename);
+    }
 }
 
 export function importFromStdin(backpackDir) {
@@ -38,38 +46,72 @@ export function exportFile(filename, backpackDir) {
 }
 
 export function exportToStdout(filename, backpackDir) {
-    fs.createReadStream(path.join(backpackDir, filename)).pipe(process.stdout);
+    const fullPath = path.join(backpackDir, filename);
+    fs.createReadStream(fullPath).pipe(process.stdout);
 }
 
+export async function getFileType(filename, backpackDir) {
+    const fullPath = path.join(backpackDir, filename);
+    if (fs.lstatSync(fullPath).isDirectory()) {
+        return FILE_TYPE_DIRECTORY;
+    } else {
+        const chunk = readChunk.sync(fullPath, 0, 60);
+        return await getFileTypeFromChunk(chunk);
+    }
+}
 
-async function getContent(fullPath) {
-    const chunk = readChunk.sync(fullPath, 0, 60);
+export async function getFileTypeFromChunk(chunk) {
     const type = await FileType.fromBuffer(chunk);
     if (type) {
         return type.mime;
     } else {
-        return new Buffer.from(chunk).toString('utf-8');
+        return FILE_TYPE_TEXT_PLAIN;
     }
 }
 
+function getContent(chunk) {
+    let result = new Buffer.from(chunk).toString('utf-8');
+    result = result.replace(/(?:\r\n|\r|\n)/g, ' ');
+    result = result.substring(0, 60).trim();
+    if (result.length === 0) {
+        result = '<empty>';
+    } else {
+        result = '"' + result + '"';
+    }
+    return result;
+}
+
 async function readContentForStdinFiles(files, backpackDir) {
-    const result = await Promise.all(files.map(async f => {
-        if (f.name.startsWith('stdin-')) {
-            const fullPath = path.join(backpackDir, f.name);
-            let content = await getContent(fullPath);
-            content = content.replace(/(?:\r\n|\r|\n)/g, ' ');
-            content = content.substring(0, 60);
-            if (content.length === 0) {
-                content = '<empty>';
-            } else {
-                content = '"' + content + '"';
-            }
-            return {...f, content: content};
+    return await Promise.all(files.map(async f => {
+        const fullPath = path.join(backpackDir, f.name);
+        if (fs.lstatSync(fullPath).isDirectory()) {
+            return {...f, type: 'directory', content: f.name};
         } else {
-            return {...f, content: f.name};
+            const chunk = readChunk.sync(fullPath, 0, 60);
+            const fileType = await getFileTypeFromChunk(chunk);
+            let content;
+            if (f.name.startsWith('stdin-') && fileType === FILE_TYPE_TEXT_PLAIN) {
+                content = getContent(chunk);
+            } else {
+                content = f.name;
+            }
+            return {...f, type: fileType, content: content};
         }
     }));
-    return result;
+}
+
+function addFileTypeEmojis(files) {
+    return files.map(f => {
+        if (f.type === 'directory') {
+            return {...f, content: emoji.get('file_folder') + ' ' + f.content};
+        } else if (f.type === FILE_TYPE_TEXT_PLAIN) {
+            return {...f, content: emoji.get('notebook') + ' ' + f.content};
+        } else if (f.type.startsWith('image/')) {
+            return {...f, content: emoji.get('camera') + ' ' + f.content};
+        } else {
+            return f;
+        }
+    });
 }
 
 export async function getFilename(i, backpackFolder) {
@@ -79,19 +121,20 @@ export async function getFilename(i, backpackFolder) {
 }
 
 export async function getStoredFiles(backpackDir) {
-    const files = fs.readdirSync(backpackDir);
-    const filesWithTimestamp = files.map(f => ({
+    let files = fs.readdirSync(backpackDir);
+    files = files.map(f => ({
         name: f,
-        ctime: fs.statSync(path.join(backpackDir, f)).ctime.getTime()
+        birthTime: fs.statSync(path.join(backpackDir, f)).birthtime.getTime()
     }));
-    filesWithTimestamp.sort((a, b) => b.ctime - a.ctime);
-    return filesWithTimestamp;
+    files.sort((a, b) => b.birthTime - a.birthTime);
+    return files;
 }
 
 export async function listFiles(backpackDir) {
-    const files = await getStoredFiles(backpackDir);
-    const filesWithContent = await readContentForStdinFiles(files, backpackDir)
-    new BackpackTable(filesWithContent).render();
+    let files = await getStoredFiles(backpackDir);
+    files = await readContentForStdinFiles(files, backpackDir);
+    files = addFileTypeEmojis(files);
+    new BackpackTable(files).render();
 }
 
 export function deleteFile(filename, backpackDir) {

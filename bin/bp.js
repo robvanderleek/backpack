@@ -4,14 +4,18 @@ import {
     deleteIndex,
     exportFile,
     exportToStdout,
+    FILE_TYPE_TEXT_PLAIN,
     getBackpackFolder,
     getFilename,
+    getFileType,
     getStoredFiles,
     importFile,
     importFromStdin,
     listFiles
 } from "../src/backpack.js";
 import {isNumber} from "../src/utils.js";
+import path from "path";
+import open from 'open';
 
 const backpackFolder = getBackpackFolder();
 
@@ -37,25 +41,36 @@ program.on('--help', () => {
 
 program.parse();
 const args = process.argv.slice(2);
-if (program.import && args.length === 2) {
-    importFile(program.import, backpackFolder);
-} else if (isNumber(program.export) && args.length === 2) {
-    const filename = await getFilename(program.export, backpackFolder);
-    exportFile(filename, backpackFolder);
-} else if (program.list && args.length === 1) {
-    listFiles(backpackFolder);
-} else if (isNumber(program.delete) && args.length === 2) {
-    const index = parseInt(program.delete);
-    deleteIndex(index, backpackFolder);
-} else if (args.length === 1 && !isNaN(args[0])) {
-    (async () => {
+
+async function run(program, args) {
+    if (program.import && args.length === 2) {
+        importFile(program.import, backpackFolder);
+    } else if (isNumber(program.export) && args.length === 2) {
+        const filename = await getFilename(program.export, backpackFolder);
+        exportFile(filename, backpackFolder);
+    } else if (program.list && args.length === 1) {
+        await listFiles(backpackFolder);
+    } else if (isNumber(program.delete) && args.length === 2) {
+        const index = parseInt(program.delete);
+        await deleteIndex(index, backpackFolder);
+    } else if (args.length === 1 && !isNaN(args[0])) {
         const index = parseInt(args[0]);
         const files = await getStoredFiles(backpackFolder);
-        const filename = files[files.length - index].name;
-        exportToStdout(filename, backpackFolder);
-    })();
-} else if (!process.stdin.isTTY) {
-    importFromStdin(backpackFolder);
-} else {
-    listFiles(backpackFolder);
+        const file = files[files.length - index];
+        const filename = file.name;
+        const fileType = await getFileType(filename, backpackFolder);
+        if (fileType === FILE_TYPE_TEXT_PLAIN) {
+            exportToStdout(filename, backpackFolder);
+        } else {
+            await open(path.join(backpackFolder, filename));
+        }
+    } else if (!process.stdin.isTTY) {
+        importFromStdin(backpackFolder);
+    } else {
+        await listFiles(backpackFolder);
+    }
 }
+
+(async () => {
+    await run(program, args);
+})();
