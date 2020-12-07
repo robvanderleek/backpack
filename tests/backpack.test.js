@@ -1,4 +1,11 @@
-import {deleteFile, deleteIndex, getFileType, getStoredFiles, importFile} from "../src/backpack.js";
+import {
+    deleteFile,
+    deleteIndex,
+    getFileType,
+    getFileTypeFromChunk,
+    getStoredFiles,
+    importFile
+} from "../src/backpack.js";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -84,15 +91,33 @@ test('delete stdin file by index', async () => {
 });
 
 test('get file-type from file chunk', async () => {
-    let result = await getFileType(Buffer.from('Hello world', 'utf8'));
+    let result = await getFileTypeFromChunk(Buffer.from('Hello world', 'utf8'));
 
     expect(result).toBe('text/plain');
 
     const chunk = readChunk.sync(path.join(__dirname, 'respect.gif'), 0, 60);
 
-    result = await getFileType(chunk);
+    result = await getFileTypeFromChunk(chunk);
 
     expect(result).toBe('image/gif');
+});
+
+test('get file type from path', async () => {
+    let fullPath = path.join(__dirname, 'respect.gif');
+    let data = fs.readFileSync(fullPath);
+    createFileInBackpack('respect.gif', data);
+
+    let result = await getFileType('respect.gif', backpackFolder);
+
+    expect(result).toBe('image/gif');
+
+    fullPath = path.join(__dirname, 'sample.txt');
+    data = fs.readFileSync(fullPath);
+    createFileInBackpack('sample.txt', data);
+
+    result = await getFileType('sample.txt', backpackFolder);
+
+    expect(result).toBe('text/plain');
 });
 
 test('import file into backpack',async () => {
