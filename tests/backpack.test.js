@@ -1,6 +1,8 @@
 import {
     deleteFile,
     deleteIndex,
+    FILE_TYPE_DIRECTORY,
+    FILE_TYPE_TEXT_PLAIN,
     getFileType,
     getFileTypeFromChunk,
     getStoredFiles,
@@ -39,6 +41,10 @@ function createTempFile(content) {
     const tmpObj = tmp.fileSync();
     fs.writeFileSync(tmpObj.name, content);
     return tmpObj.name;
+}
+
+function createTempDir() {
+    return tmp.dirSync().name;
 }
 
 test('get stored files, empty backpack', async () => {
@@ -117,10 +123,21 @@ test('get file type from path', async () => {
 
     result = await getFileType('sample.txt', backpackFolder);
 
-    expect(result).toBe('text/plain');
+    expect(result).toBe(FILE_TYPE_TEXT_PLAIN);
 });
 
-test('import file into backpack',async () => {
+test('get file type from directory', async () => {
+    const tmpDir = createTempDir();
+    const dirName = path.basename(tmpDir);
+
+    importFile(tmpDir, backpackFolder);
+
+    const result = await getFileType(dirName, backpackFolder);
+
+    expect(result).toBe(FILE_TYPE_DIRECTORY);
+});
+
+test('import file into backpack', async () => {
     const tmpFile = createTempFile('Hello world');
 
     importFile(tmpFile, backpackFolder);
@@ -130,7 +147,7 @@ test('import file into backpack',async () => {
     expect(result).toHaveLength(1);
 });
 
-test('import file into backpack, file does not exist',async () => {
+test('import file into backpack, file does not exist', async () => {
     importFile('thisfiledoesnotexist', backpackFolder);
 
     const result = await getStoredFiles(backpackFolder);

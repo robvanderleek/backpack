@@ -7,6 +7,7 @@ import readChunk from "read-chunk";
 import emoji from "node-emoji";
 
 export const FILE_TYPE_TEXT_PLAIN = 'text/plain';
+export const FILE_TYPE_DIRECTORY = 'inode/directory';
 
 export function getBackpackFolder() {
     const homeDir = os.homedir();
@@ -51,8 +52,12 @@ export function exportToStdout(filename, backpackDir) {
 
 export async function getFileType(filename, backpackDir) {
     const fullPath = path.join(backpackDir, filename);
-    const chunk = readChunk.sync(fullPath, 0, 60);
-    return await getFileTypeFromChunk(chunk);
+    if (fs.lstatSync(fullPath).isDirectory()) {
+        return FILE_TYPE_DIRECTORY;
+    } else {
+        const chunk = readChunk.sync(fullPath, 0, 60);
+        return await getFileTypeFromChunk(chunk);
+    }
 }
 
 export async function getFileTypeFromChunk(chunk) {
