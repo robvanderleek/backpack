@@ -16,6 +16,8 @@
     "bp": "bin/bp.js"
   },
   "dependencies": {
+    "amazon-cognito-identity-js": "^4.5.5",
+    "aws-sdk": "^2.807.0",
     "commander": "^6.1.0",
     "file-type": "^16.0.0",
     "node-emoji": "^1.10.0",
