@@ -31,7 +31,7 @@
     "babel-jest": "^26.3.0",
     "jest": "^26.4.2",
     "nexe": "^3.3.7",
-    "semantic-release": "^17.1.2",
+    "semantic-release": "^18.0.1",
     "tmp": "^0.2.1"
   },
   "repository": {
