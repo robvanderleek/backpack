@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "commander": "^7.0.0",
-    "file-type": "^16.0.0",
+    "file-type": "^17.1.4",
     "node-emoji": "^1.10.0",
     "open": "^8.0.2",
     "read-chunk": "^3.2.0",
