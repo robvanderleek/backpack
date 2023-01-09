@@ -16,7 +16,7 @@
     "bp": "bin/bp.js"
   },
   "dependencies": {
-    "commander": "^7.0.0",
+    "commander": "^9.5.0",
     "file-type": "^16.0.0",
     "node-emoji": "^1.10.0",
     "open": "^8.0.2",
