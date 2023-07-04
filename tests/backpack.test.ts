@@ -12,11 +12,11 @@ import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
 import {afterEach, beforeEach, test} from "@jest/globals";
-import {removeFolder} from "./test-utils.js";
 import readChunk from "read-chunk";
 import tmp from "tmp";
+import {removeFolder} from "../src/test-utils.js";
 
-let backpackFolder;
+let backpackFolder: string;
 
 beforeEach(() => {
     backpackFolder = fs.mkdtempSync(path.join(os.tmpdir(), 'backpack-'));
@@ -28,16 +28,16 @@ afterEach(() => {
     }
 })
 
-function createFileInBackpack(filename, content = '') {
+function createFileInBackpack(filename: string, content = '') {
     fs.writeFileSync(path.join(backpackFolder, filename), content);
 }
 
-function createStdinFileInBackpack(content) {
+function createStdinFileInBackpack(content: string) {
     const filename = `stdin-${new Date().toISOString()}`;
     createFileInBackpack(filename, content);
 }
 
-function createTempFile(content) {
+function createTempFile(content: string) {
     const tmpObj = tmp.fileSync();
     fs.writeFileSync(tmpObj.name, content);
     return tmpObj.name;
@@ -110,7 +110,7 @@ test('get file-type from file chunk', async () => {
 
 test('get file type from path', async () => {
     let fullPath = path.join(__dirname, 'respect.gif');
-    let data = fs.readFileSync(fullPath);
+    let data = fs.readFileSync(fullPath).toString();
     createFileInBackpack('respect.gif', data);
 
     let result = await getFileType('respect.gif', backpackFolder);
@@ -118,7 +118,7 @@ test('get file type from path', async () => {
     expect(result).toBe('image/gif');
 
     fullPath = path.join(__dirname, 'sample.txt');
-    data = fs.readFileSync(fullPath);
+    data = fs.readFileSync(fullPath).toString();
     createFileInBackpack('sample.txt', data);
 
     result = await getFileType('sample.txt', backpackFolder);
