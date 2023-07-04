@@ -12,8 +12,8 @@ import {
     importFile,
     importFromStdin,
     listFiles
-} from "../src/backpack.js";
-import {isNumber} from "../src/utils.js";
+} from "./backpack.js";
+import {isNumber} from "./utils.js";
 import path from "path";
 import open from 'open';
 
@@ -42,7 +42,7 @@ program.on('--help', () => {
 program.parse();
 const args = process.argv.slice(2);
 
-async function run(program, args) {
+async function run(program: any, args: any[]) {
     if (program.import && args.length === 2) {
         importFile(program.import, backpackFolder);
     } else if (isNumber(program.export) && args.length === 2) {
