@@ -19,7 +19,7 @@
     "node": ">=18.x"
   },
   "dependencies": {
-    "commander": "^9.4.1",
+    "commander": "^11.0.0",
     "file-type": "^16.5.4",
     "open": "^8.0.2",
     "read-chunk": "^3.2.0",
